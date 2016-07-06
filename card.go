@@ -1,5 +1,9 @@
 package tajitsu
 
+// Card is a generic card
+type Card interface {
+}
+
 // CombatCard represents a classic combat card
 type CombatCard struct {
 	YinStance, YangStance                                          Stance
