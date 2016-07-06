@@ -6,9 +6,10 @@ type Card interface {
 
 // CombatCard represents a classic combat card
 type CombatCard struct {
-	YinStance, YangStance                                          Stance
-	Advantage                                                      Balance
-	YinEffect, YangEffect, YinAdvantageEffect, YangAdvantageEffect Effect
+	YinStance, YangStance                 Stance
+	Advantage                             Balance
+	YinEffect, YangEffect                 Effect
+	YinFinisherEffect, YangFinisherEffect []Effect
 }
 
 // Balance represents the orientaion of a card
@@ -25,7 +26,7 @@ type Stance int
 
 // Stance constants
 const (
-	Serpent Stance = iota
+	Snake Stance = iota
 	Tiger
 	Dragon
 )
