@@ -5,7 +5,7 @@ import "testing"
 func TestPlayCard(t *testing.T) {
 	game := NewGame("../data/combat_card.json")
 	game.PlayerA.Draw()
-	game.PlayCard(0, true)
+	game.PlayCard(0, true, true)
 }
 
 func TestAbandonToVictory(t *testing.T) {
@@ -33,16 +33,19 @@ func TestAbandonToVictory(t *testing.T) {
 
 func TestPickCombo(t *testing.T) {
 	game := NewGame("../data/combat_card.json")
-	if err := game.PlayCard(0, true); err != nil { // Player A plays a card
+	if err := game.PlayCard(0, false, true); err != nil { // Player A plays a card
 		t.Error(err)
 	}
-	if err := game.PlayCard(0, true); err != nil { // Player B plays a card
+	if err := game.PlayCard(0, true, true); err != nil { // Player B plays a card on a new combo
 		t.Error(err)
 	}
 	if err := game.Abandon(); err != nil { // Player A abandons
 		t.Error(err)
 	}
 	if err := game.PickCombo(0); err != nil { // Player B picks combos
+		t.Error(err)
+	}
+	if err := game.PickCombo(0); err != nil { // Player A picks combos
 		t.Error(err)
 	}
 	if err := game.SetCurrentPlayer(true); err != nil {
@@ -53,11 +56,11 @@ func TestPickCombo(t *testing.T) {
 	}
 
 	numberOfCardsPlayerA := len(game.PlayerA.Deck) + len(game.PlayerA.Hand)
-	if numberOfCardsPlayerA != 8 {
-		t.Errorf("Total number of cards in players deck and hand is %d, expected 8", numberOfCardsPlayerA)
+	if numberOfCardsPlayerA != 9 {
+		t.Errorf("Total number of cards in players deck and hand is %d, expected 9", numberOfCardsPlayerA)
 	}
 	numberOfCardsPlayerB := len(game.PlayerB.Deck) + len(game.PlayerB.Hand)
-	if numberOfCardsPlayerB != 10 {
-		t.Errorf("Total number of cards in players deck and hand is %d, expected 10", numberOfCardsPlayerB)
+	if numberOfCardsPlayerB != 9 {
+		t.Errorf("Total number of cards in players deck and hand is %d, expected 9", numberOfCardsPlayerB)
 	}
 }

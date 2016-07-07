@@ -30,9 +30,15 @@ const (
 )
 
 // PlayCard move a given card from current player's hand to the current combo
-func (game *Game) PlayCard(pos uint8, isYinA bool) error {
+func (game *Game) PlayCard(pos uint8, newCombo bool, isYinA bool) error {
 	if game.State != Combat {
 		return fmt.Errorf("Can only play a combat card, during the Combat step, current game state is %s", game.State)
+	}
+
+	// Start a new combo if necessary
+	if newCombo && len(game.Combos[len(game.Combos)-1]) != 0 {
+		game.Combos = append(game.Combos, CardCollection{})
+		game.IsYinA = append(game.IsYinA, []bool{})
 	}
 
 	player := game.CurrentPlayer
@@ -111,6 +117,8 @@ func (game *Game) PickCombo(pos int) error {
 	if len(game.Combos) == 0 || len(game.Combos[0]) == 0 {
 		game.State++
 	}
+
+	game.switchCurrentPlayer()
 
 	return nil
 }
