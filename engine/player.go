@@ -31,7 +31,11 @@ func (player *Player) Draw() Card {
 }
 
 // Discard put the n_th card from player's hand to his discard pile
+// if the card does not exists (or if the hand is empty), does nothing
 func (player *Player) Discard(n int) {
+	if n+1 > len(player.Hand) {
+		return
+	}
 	card := player.Hand[n]
 	copy(player.Hand[n:], player.Hand[n+1:])
 	player.Hand[len(player.Hand)-1] = nil
