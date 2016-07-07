@@ -11,7 +11,7 @@ type Player struct {
 type CardCollection []Card
 
 // DeckShuffle randomizes the player's deck
-func (player Player) DeckShuffle() {
+func (player *Player) DeckShuffle() {
 	for i := range player.Deck {
 		j := rand.Intn(i + 1)
 		player.Deck[i], player.Deck[j] = player.Deck[j], player.Deck[i]
@@ -19,8 +19,11 @@ func (player Player) DeckShuffle() {
 }
 
 // Draw pop the first card from the deck to the player's hand
-// Returns the drawn card
-func (player Player) Draw() Card {
+// Returns the drawn card or nil if the deck was empty
+func (player *Player) Draw() Card {
+	if len(player.Deck) == 0 {
+		return nil
+	}
 	var card Card
 	card, player.Deck = player.Deck[len(player.Deck)-1], player.Deck[:len(player.Deck)-1]
 	player.Hand = append(player.Hand, card)
@@ -28,7 +31,7 @@ func (player Player) Draw() Card {
 }
 
 // Discard put the n_th card from player's hand to his discard pile
-func (player Player) Discard(n int) {
+func (player *Player) Discard(n int) {
 	card := player.Hand[n]
 	copy(player.Hand[n:], player.Hand[n+1:])
 	player.Hand[len(player.Hand)-1] = nil
