@@ -13,20 +13,15 @@ type Game struct {
 	PlayerA, PlayerB *Player
 	CurrentPlayer    *Player         // The active player
 	Combos           [][]*CombatCard // the current combo is always the last one
-	IsYinUp          [][]bool        // Cards corresponding orientations
+	IsYinA           [][]bool        // Cards corresponding orientations, true id yin is pointing towards player A
 }
 
-func (game Game) getCurrentCombo() []*CombatCard {
-	return game.Combos[len(game.Combos)-1]
+func (game Game) getCurrentCombo() ([]*CombatCard, []bool) {
+	return game.Combos[len(game.Combos)-1], game.IsYinA[len(game.Combos)-1]
 }
 
 // PlayCard move a given card from current player's hand to the current combo
-func (game *Game) PlayCard(pos uint8, isYinUp bool) {
-	// Create a new combo if None exists
-	if len(game.Combos) == 0 {
-		game.Combos = [][]*CombatCard{[]*CombatCard{}}
-	}
-
+func (game *Game) PlayCard(pos uint8, isYinA bool) {
 	player := game.CurrentPlayer
 	card := player.Hand[pos]
 	// Remove from hand
@@ -34,8 +29,9 @@ func (game *Game) PlayCard(pos uint8, isYinUp bool) {
 	player.Hand[len(player.Hand)-1] = nil
 	player.Hand = player.Hand[:len(player.Hand)-1]
 	// Add to the current combo
-	currentCombo := game.getCurrentCombo()
+	currentCombo, currentOrientations := game.getCurrentCombo()
 	currentCombo = append(currentCombo, card.(*CombatCard))
+	currentOrientations = append(currentOrientations, isYinA)
 }
 
 // NewGame creates and start a new game
@@ -44,6 +40,10 @@ func NewGame(dataPath string) *Game {
 	game.PlayerA = new(Player)
 	game.PlayerB = new(Player)
 	game.CurrentPlayer = game.PlayerA
+
+	// Create the first combo
+	game.Combos = [][]*CombatCard{[]*CombatCard{}}
+	game.IsYinA = [][]bool{[]bool{}}
 
 	// Add the combat cards
 	f, e := ioutil.ReadFile(dataPath)
