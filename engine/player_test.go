@@ -1,4 +1,4 @@
-package test
+package engine
 
 import (
 	"encoding/json"
@@ -6,11 +6,9 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
-
-	"github.com/jglouis/tajitsu/engine"
 )
 
-var combatCards []*engine.CombatCard
+var combatCards []*CombatCard
 
 func init() {
 	f, e := ioutil.ReadFile("../data/combat_card.json")
@@ -21,8 +19,8 @@ func init() {
 	json.Unmarshal(f, &combatCards)
 }
 
-func setUpPlayer() engine.Player {
-	var player engine.Player
+func setUpPlayer() Player {
+	var player Player
 	for _, combatCard := range combatCards {
 		player.Deck = append(player.Deck, combatCard)
 	}
@@ -77,7 +75,7 @@ func TestDeckShuffle(t *testing.T) {
 }
 
 func TestPlayCard(t *testing.T) {
-	game := engine.NewGame("../data/combat_card.json")
+	game := NewGame("../data/combat_card.json")
 	game.PlayerA.Draw()
 	game.PlayCard(0, true)
 }
