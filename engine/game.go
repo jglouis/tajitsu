@@ -18,10 +18,15 @@ func NewGame() {
 		fmt.Printf("File error: %v\n", e)
 		os.Exit(1)
 	}
-	json.Unmarshal(f, &(playerA.Deck))
-	json.Unmarshal(f, &(playerA.Deck))
+	var combatCards []*CombatCard
+	json.Unmarshal(f, &combatCards)
 
-	fmt.Println(playerA.Deck)
+	fmt.Printf("Combat cards: %s\n\n", combatCards)
+
+	for _, combatCard := range combatCards {
+		playerA.Deck = append(playerA.Deck, combatCard)
+		playerB.Deck = append(playerB.Deck, combatCard)
+	}
 
 	// Shuffle the deck
 	playerA.DeckShuffle()

@@ -7,7 +7,7 @@ type Player struct {
 	Hand, Deck, DiscardPile CardCollection
 }
 
-// CardCollection is a slice of Cards
+// CardCollection is a slice of Card
 type CardCollection []Card
 
 // DeckShuffle randomizes the player's deck
@@ -20,13 +20,14 @@ func (player Player) DeckShuffle() {
 
 // Draw pop the first card from the deck to the player's hand
 // Returns the drawn card
-func (player Player) Draw() *Card {
+func (player Player) Draw() Card {
 	var card Card
 	card, player.Deck = player.Deck[len(player.Deck)-1], player.Deck[:len(player.Deck)-1]
-	return &card
+	player.Hand = append(player.Hand, card)
+	return card
 }
 
-// Discard put the nth card from player's hand to his discard pile
+// Discard put the n_th card from player's hand to his discard pile
 func (player Player) Discard(n int) {
 	card := player.Hand[n]
 	copy(player.Hand[n:], player.Hand[n+1:])
