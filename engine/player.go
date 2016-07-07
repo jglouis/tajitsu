@@ -10,6 +10,11 @@ type Player struct {
 // CardCollection is a slice of Card
 type CardCollection []Card
 
+// Merge merges two card collections into one
+func (cardCollection CardCollection) Merge(otherCollection CardCollection) {
+	cardCollection = append(cardCollection, cardCollection...)
+}
+
 // DeckShuffle randomizes the player's deck
 func (player *Player) DeckShuffle() {
 	for i := range player.Deck {
