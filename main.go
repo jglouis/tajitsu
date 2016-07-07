@@ -3,5 +3,15 @@ package main
 import "github.com/jglouis/tajitsu/engine"
 
 func main() {
-	engine.NewGame("./data/combat_card.json")
+	game := engine.NewGame("./data/combat_card.json")
+
+	game.PlayCard(0, true)
+	game.Abandon()
+	game.PickCombo(0)
+	game.SetCurrentPlayer(true)
+
+	game.PlayCard(0, true)
+	game.Abandon()
+	game.PickCombo(0)
+	game.SetCurrentPlayer(true)
 }

@@ -29,10 +29,6 @@ const (
 	End
 )
 
-func (game Game) getCurrentCombo() (CardCollection, []bool) {
-	return game.Combos[len(game.Combos)-1], game.IsYinA[len(game.Combos)-1]
-}
-
 // PlayCard move a given card from current player's hand to the current combo
 func (game *Game) PlayCard(pos uint8, isYinA bool) error {
 	if game.State != Combat {
@@ -46,11 +42,21 @@ func (game *Game) PlayCard(pos uint8, isYinA bool) error {
 	player.Hand[len(player.Hand)-1] = nil
 	player.Hand = player.Hand[:len(player.Hand)-1]
 	// Add to the current combo
-	currentCombo, currentOrientations := game.getCurrentCombo()
-	currentCombo = append(currentCombo, card.(*CombatCard))
-	currentOrientations = append(currentOrientations, isYinA)
+	lastComboIndex := len(game.Combos) - 1
+	game.Combos[lastComboIndex] = append(game.Combos[lastComboIndex], card)
+	game.IsYinA[lastComboIndex] = append(game.IsYinA[lastComboIndex], isYinA)
+
+	game.switchCurrentPlayer()
 
 	return nil
+}
+
+func (game *Game) switchCurrentPlayer() {
+	if game.CurrentPlayer == game.PlayerA {
+		game.CurrentPlayer = game.PlayerB
+	} else {
+		game.CurrentPlayer = game.PlayerA
+	}
 }
 
 // Abandon indicates the current player may or does not want to play a card
@@ -82,6 +88,7 @@ func (game *Game) Abandon() error {
 		game.State = ChoosingFirstPlayer
 	} else {
 		game.State = Recover
+		game.switchCurrentPlayer()
 	}
 
 	return nil
@@ -96,7 +103,7 @@ func (game *Game) PickCombo(pos int) error {
 		return fmt.Errorf("The combo at position %d does not exist", pos)
 	}
 	// Add the cards of the combo to the current player's deck
-	game.CurrentPlayer.Deck.Merge(game.Combos[pos])
+	game.CurrentPlayer.Deck = append(game.CurrentPlayer.Deck, game.Combos[pos]...)
 	// Remove the combo from the slice
 	game.Combos = append(game.Combos[:pos], game.Combos[pos+1:]...)
 
@@ -124,9 +131,28 @@ func (game *Game) SetCurrentPlayer(isA bool) error {
 	return nil
 }
 func (game *Game) startNextRound() {
+	// All cards in deck and in hand goes to their player's respective deck
+	for _, player := range []*Player{game.PlayerA, game.PlayerB} {
+		player.Deck = append(player.Deck, player.Hand...)
+		player.Hand = CardCollection{}
+		player.Deck = append(player.Deck, player.DiscardPile...)
+		player.DiscardPile = CardCollection{}
+	}
+
+	// Reset game state and combo area
 	game.State = Combat
 	game.IsYinA = [][]bool{[]bool{}}
 	game.Combos = []CardCollection{CardCollection{}}
+
+	// Shuffle the deck
+	game.PlayerA.DeckShuffle()
+	game.PlayerB.DeckShuffle()
+
+	// Draw five cards
+	for i := 0; i < 5; i++ {
+		game.PlayerA.Draw()
+		game.PlayerB.Draw()
+	}
 }
 
 // NewGame creates and start a new game
@@ -135,9 +161,6 @@ func NewGame(dataPath string) *Game {
 	game.PlayerA = new(Player)
 	game.PlayerB = new(Player)
 	game.CurrentPlayer = game.PlayerA
-
-	// Create the first combo
-	game.startNextRound()
 
 	// Load the combat cards
 	f, e := ioutil.ReadFile(dataPath)
@@ -148,21 +171,12 @@ func NewGame(dataPath string) *Game {
 	var combatCards []*CombatCard
 	json.Unmarshal(f, &combatCards)
 
-	fmt.Printf("Combat cards: %s\n\n", combatCards)
-
 	for _, combatCard := range combatCards {
 		game.PlayerA.Deck = append(game.PlayerA.Deck, combatCard)
 		game.PlayerB.Deck = append(game.PlayerB.Deck, combatCard)
 	}
 
-	// Shuffle the deck
-	game.PlayerA.DeckShuffle()
-	game.PlayerB.DeckShuffle()
-
-	for i := 0; i < 3; i++ {
-		game.PlayerA.Draw()
-		game.PlayerB.Draw()
-	}
+	game.startNextRound()
 
 	fmt.Printf("Player A hand: %s\n", game.PlayerA.Hand)
 	fmt.Printf("Player B hand: %s\n", game.PlayerB.Hand)
