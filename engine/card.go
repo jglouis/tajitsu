@@ -44,7 +44,7 @@ func stringToEffect(str string) Effect {
 	case "SwitchAspect":
 		return SwitchAspect
 	}
-	return -1
+	return NoEffect
 }
 
 func (card *CombatCard) UnmarshalJSON(data []byte) error {
@@ -74,7 +74,7 @@ func (card *CombatCard) UnmarshalJSON(data []byte) error {
 }
 
 // Balance represents the orientaion of a card
-type Balance int
+type Balance uint8
 
 // Balance constants, Yin or Yang
 const (
@@ -84,7 +84,7 @@ const (
 )
 
 // Stance represents the combattant stance
-type Stance int
+type Stance int8
 
 // Stance constants
 //go:generate stringer -type=Stance
@@ -95,7 +95,7 @@ const (
 )
 
 // Effect represents a card effect
-type Effect int
+type Effect uint8
 
 // Effect constants
 const (

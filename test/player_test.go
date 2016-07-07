@@ -75,3 +75,9 @@ func TestDeckShuffle(t *testing.T) {
 		t.Errorf("Expected player's discard pile to be empty, but has %d", len(player.DiscardPile))
 	}
 }
+
+func TestPlayCard(t *testing.T) {
+	game := engine.NewGame("../data/combat_card.json")
+	game.PlayerA.Draw()
+	game.PlayCard(0, true)
+}
