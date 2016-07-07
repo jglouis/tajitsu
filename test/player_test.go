@@ -61,3 +61,17 @@ func TestDiscard(t *testing.T) {
 		t.Errorf("Expected player's discard pile to have nine cards, but has %d", len(player.DiscardPile))
 	}
 }
+
+func TestDeckShuffle(t *testing.T) {
+	player := setUpPlayer()
+	player.DeckShuffle()
+	if len(player.Deck) != 9 {
+		t.Errorf("Expected player's deck tohave nine cards, but there are %d cards left", len(player.Deck))
+	}
+	if len(player.Hand) != 0 {
+		t.Errorf("Expected player's hand to be empty, but has %d", len(player.Hand))
+	}
+	if len(player.DiscardPile) != 0 {
+		t.Errorf("Expected player's discard pile to be empty, but has %d", len(player.DiscardPile))
+	}
+}
