@@ -31,8 +31,7 @@ func TestDraw(t *testing.T) {
 	player := setUpPlayer()
 
 	for i := 0; i < 10; i++ {
-		card := player.Draw()
-		fmt.Println(card)
+		player.Draw()
 	}
 	if len(player.Deck) != 0 {
 		t.Errorf("Expected player's deck to be empty, but there are %d cards left", len(player.Deck))

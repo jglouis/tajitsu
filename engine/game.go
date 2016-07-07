@@ -21,6 +21,7 @@ type Game struct {
 type GameState uint8
 
 // GameState constants
+//go:generate stringer -type=GameState
 const (
 	Combat  GameState = iota // Playing combat cards
 	Recover                  // Picking the combos and adding the cards to the TestDeckShuffle
@@ -33,7 +34,11 @@ func (game Game) getCurrentCombo() (CardCollection, []bool) {
 }
 
 // PlayCard move a given card from current player's hand to the current combo
-func (game *Game) PlayCard(pos uint8, isYinA bool) {
+func (game *Game) PlayCard(pos uint8, isYinA bool) error {
+	if game.State != Combat {
+		return fmt.Errorf("Can only play a combat card, during the Combat step, current game state is %s", game.State)
+	}
+
 	player := game.CurrentPlayer
 	card := player.Hand[pos]
 	// Remove from hand
@@ -44,53 +49,84 @@ func (game *Game) PlayCard(pos uint8, isYinA bool) {
 	currentCombo, currentOrientations := game.getCurrentCombo()
 	currentCombo = append(currentCombo, card.(*CombatCard))
 	currentOrientations = append(currentOrientations, isYinA)
+
+	return nil
 }
 
 // Abandon indicates the current player may or does not want to play a card
 // The round is lost for him and the other player increments his score
-func (game *Game) Abandon() {
+func (game *Game) Abandon() error {
+	if game.State != Combat {
+		return fmt.Errorf("Can only abandon during the Combat step, current game state is %s", game.State)
+	}
+
 	// Increment score and check for victory
 	if game.CurrentPlayer == game.PlayerA {
 		game.ScoreB++
 		if game.ScoreB == 2 {
 			fmt.Println("Player B is victorious")
-			return
+			game.State = End
+			return nil
 		}
 	} else {
 		game.ScoreA++
 		if game.ScoreA == 2 {
 			fmt.Println("Player A is victorious")
-			return
+			game.State = End
+			return nil
 		}
 	}
 
-	// Create new Combos
-	game.Combos = append(game.Combos, CardCollection{})
-	game.IsYinA = append(game.IsYinA, []bool{})
+	// Switch game state to Recover or to ChoosingFirstPlayer if there are no combos to pick
+	if len(game.Combos) == 0 || len(game.Combos[0]) == 0 {
+		game.State = ChoosingFirstPlayer
+	} else {
+		game.State = Recover
+	}
 
-	// Switch game state to Recover
-	game.State = Recover
+	return nil
 }
 
 // PickCombo moves all the card from the combo the current player's deck
-func (game *Game) PickCombo(pos int) {
+func (game *Game) PickCombo(pos int) error {
+	if game.State != Recover {
+		return fmt.Errorf("Can only pick a combo, during the Recover step, current game state is %s", game.State)
+	}
 	if pos+1 > len(game.Combos) {
-		return
+		return fmt.Errorf("The combo at position %d does not exist", pos)
 	}
 	// Add the cards of the combo to the current player's deck
 	game.CurrentPlayer.Deck.Merge(game.Combos[pos])
 	// Remove the combo from the slice
 	game.Combos = append(game.Combos[:pos], game.Combos[pos+1:]...)
+
+	// If all combos are picked, go to the next step
+	if len(game.Combos) == 0 || len(game.Combos[0]) == 0 {
+		game.State++
+	}
+
+	return nil
 }
 
 // SetCurrentPlayer allows to pick the new first player for the next round
 // true for player A
-func (game *Game) SetCurrentPlayer(isA bool) {
+func (game *Game) SetCurrentPlayer(isA bool) error {
+	if game.State != ChoosingFirstPlayer {
+		return fmt.Errorf("Can only set the first player, during the ChoosingFirstPlayer step, current game state is %s", game.State)
+	}
 	if isA {
 		game.CurrentPlayer = game.PlayerA
 	} else {
 		game.CurrentPlayer = game.PlayerB
 	}
+	// Start the next round
+	game.startNextRound()
+	return nil
+}
+func (game *Game) startNextRound() {
+	game.State = Combat
+	game.IsYinA = [][]bool{[]bool{}}
+	game.Combos = []CardCollection{CardCollection{}}
 }
 
 // NewGame creates and start a new game
@@ -101,8 +137,7 @@ func NewGame(dataPath string) *Game {
 	game.CurrentPlayer = game.PlayerA
 
 	// Create the first combo
-	game.Combos = []CardCollection{CardCollection{}}
-	game.IsYinA = [][]bool{[]bool{}}
+	game.startNextRound()
 
 	// Load the combat cards
 	f, e := ioutil.ReadFile(dataPath)
