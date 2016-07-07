@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/jglouis/tajitsu.svg?branch=master)](https://travis-ci.org/jglouis/tajitsu)
+
 # Tajitsu
 
 ## Install
