@@ -2,6 +2,7 @@ package engine
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -43,12 +44,41 @@ func (game *Game) PlayCard(pos uint8, newCombo bool, isYinA bool) error {
 
 	player := game.CurrentPlayer
 	card := player.Hand[pos]
+
+	lastComboIndex := len(game.Combos) - 1
+
+	// Check if it is a valid play
+	if !newCombo && len(game.Combos[lastComboIndex]) != 0 {
+		// 1) Check card orientation
+		lastIsYinA := game.IsYinA[lastComboIndex][len(game.IsYinA[lastComboIndex])-1]
+		if isYinA != lastIsYinA {
+			return errors.New("Wrong card orientation")
+		}
+
+		// 2) Check opponent stance
+		lastCard := game.Combos[lastComboIndex][len(game.Combos[lastComboIndex])-1]
+		var lastOpponentStance Stance
+		var futureOpponentStance Stance
+		if lastIsYinA && game.CurrentPlayer == game.PlayerA {
+			lastOpponentStance = lastCard.(*CombatCard).YangStance
+		} else {
+			lastOpponentStance = lastCard.(*CombatCard).YinStance
+		}
+		if isYinA && game.CurrentPlayer == game.PlayerA {
+			futureOpponentStance = card.(*CombatCard).YangStance
+		} else {
+			futureOpponentStance = card.(*CombatCard).YinStance
+		}
+		if futureOpponentStance != lastOpponentStance {
+			return fmt.Errorf("Opponent stance not respected: is %s, but would be %s with the card was played", lastOpponentStance, futureOpponentStance)
+		}
+	}
 	// Remove from hand
 	copy(player.Hand[pos:], player.Hand[pos+1:])
 	player.Hand[len(player.Hand)-1] = nil
 	player.Hand = player.Hand[:len(player.Hand)-1]
 	// Add to the current combo
-	lastComboIndex := len(game.Combos) - 1
+
 	game.Combos[lastComboIndex] = append(game.Combos[lastComboIndex], card)
 	game.IsYinA[lastComboIndex] = append(game.IsYinA[lastComboIndex], isYinA)
 
