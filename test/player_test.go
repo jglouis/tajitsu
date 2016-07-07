@@ -12,14 +12,13 @@ import (
 
 var combatCards []*engine.CombatCard
 
-func TestMain(m *testing.M) {
+func init() {
 	f, e := ioutil.ReadFile("../data/combat_card.json")
 	if e != nil {
 		fmt.Printf("File error: %v\n", e)
 		os.Exit(1)
 	}
 	json.Unmarshal(f, &combatCards)
-	os.Exit(m.Run())
 }
 
 func setUpPlayer() engine.Player {
