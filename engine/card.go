@@ -1,4 +1,4 @@
-package tajitsu
+package engine
 
 // Card is a generic card
 type Card interface {

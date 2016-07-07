@@ -1,4 +1,4 @@
-package tajitsu
+package engine
 
 import (
 	"encoding/json"
@@ -9,8 +9,8 @@ import (
 
 // NewGame creates and start a new game
 func NewGame() {
-	// Create decks of card for each player
-	var deckA, deckB Deck
+	// Create the players
+	var playerA, playerB Player
 
 	// Add the combat cards
 	f, e := ioutil.ReadFile("./data/combat_card.json")
@@ -18,13 +18,13 @@ func NewGame() {
 		fmt.Printf("File error: %v\n", e)
 		os.Exit(1)
 	}
-	json.Unmarshal(f, &deckA)
-	json.Unmarshal(f, &deckB)
+	json.Unmarshal(f, &(playerA.Deck))
+	json.Unmarshal(f, &(playerA.Deck))
 
-	fmt.Println(deckA)
+	fmt.Println(playerA.Deck)
 
 	// Shuffle the deck
-	deckA.Shuffle()
-	deckB.Shuffle()
+	playerA.DeckShuffle()
+	playerB.DeckShuffle()
 
 }
