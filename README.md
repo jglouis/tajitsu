@@ -8,4 +8,8 @@
 
 ## Test
 
-to run the tests: `go test github.com/jglouis/tajitsu/test`
+to run the tests: `go test ./...`
+
+## Update data files
+
+After any update of the data file, must run `go-bindata data/` within the source folder of the project. 

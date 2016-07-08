@@ -3,7 +3,13 @@ package main
 import "github.com/jglouis/tajitsu/engine"
 
 func main() {
-	game := engine.NewGame("./data/combat_card.json")
+
+	data, err := Asset("data/combat_card.json")
+	if err != nil {
+		panic(err)
+	}
+
+	game := engine.NewGame(data)
 
 	game.PlayCard(0, false, true)
 	game.Abandon()

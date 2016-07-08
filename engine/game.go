@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"os"
 )
 
 // Game contains game related info (scores, cards in the arena)
@@ -194,20 +192,14 @@ func (game *Game) startNextRound() {
 }
 
 // NewGame creates and start a new game
-func NewGame(dataPath string) *Game {
+func NewGame(data []byte) *Game {
 	game := new(Game)
 	game.PlayerA = new(Player)
 	game.PlayerB = new(Player)
 	game.CurrentPlayer = game.PlayerA
 
-	// Load the combat cards
-	f, e := ioutil.ReadFile(dataPath)
-	if e != nil {
-		fmt.Printf("File error: %v\n", e)
-		os.Exit(1)
-	}
 	var combatCards []*CombatCard
-	json.Unmarshal(f, &combatCards)
+	json.Unmarshal(data, &combatCards)
 
 	for _, combatCard := range combatCards {
 		game.PlayerA.Deck = append(game.PlayerA.Deck, combatCard)

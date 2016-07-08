@@ -1,15 +1,32 @@
 package engine
 
-import "testing"
+import (
+	"fmt"
+	"io/ioutil"
+	"os"
+	"testing"
+)
+
+var data []byte
+
+func init() {
+	// Load the combat cards
+	f, e := ioutil.ReadFile("../data/combat_card.json")
+	if e != nil {
+		fmt.Printf("File error: %v\n", e)
+		os.Exit(1)
+	}
+	data = f
+}
 
 func TestPlayCard(t *testing.T) {
-	game := NewGame("../data/combat_card.json")
+	game := NewGame(data)
 	game.PlayerA.Draw()
 	game.PlayCard(0, true, true)
 }
 
 func TestAbandonToVictory(t *testing.T) {
-	game := NewGame("../data/combat_card.json")
+	game := NewGame(data)
 	if err := game.Abandon(); err != nil {
 		t.Error(err)
 	}
@@ -32,7 +49,7 @@ func TestAbandonToVictory(t *testing.T) {
 }
 
 func TestPickCombo(t *testing.T) {
-	game := NewGame("../data/combat_card.json")
+	game := NewGame(data)
 	if err := game.PlayCard(0, false, true); err != nil { // Player A plays a card
 		t.Error(err)
 	}
