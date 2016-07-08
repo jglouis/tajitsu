@@ -41,7 +41,7 @@ func (game *Game) PlayCard(pos uint8, newCombo bool, isYinA bool) error {
 	}
 
 	player := game.CurrentPlayer
-	card := player.Hand[pos]
+	card := player.Hand[pos].(*CombatCard)
 
 	lastComboIndex := len(game.Combos) - 1
 
@@ -63,9 +63,9 @@ func (game *Game) PlayCard(pos uint8, newCombo bool, isYinA bool) error {
 			lastOpponentStance = lastCard.(*CombatCard).YinStance
 		}
 		if isYinA && game.CurrentPlayer == game.PlayerA {
-			futureOpponentStance = card.(*CombatCard).YangStance
+			futureOpponentStance = card.YangStance
 		} else {
-			futureOpponentStance = card.(*CombatCard).YinStance
+			futureOpponentStance = card.YinStance
 		}
 		if futureOpponentStance != lastOpponentStance {
 			return fmt.Errorf("Opponent stance not respected: is %s, but would be %s with the card was played", lastOpponentStance, futureOpponentStance)
@@ -75,10 +75,36 @@ func (game *Game) PlayCard(pos uint8, newCombo bool, isYinA bool) error {
 	copy(player.Hand[pos:], player.Hand[pos+1:])
 	player.Hand[len(player.Hand)-1] = nil
 	player.Hand = player.Hand[:len(player.Hand)-1]
-	// Add to the current combo
 
+	// Add to the current combo
 	game.Combos[lastComboIndex] = append(game.Combos[lastComboIndex], card)
 	game.IsYinA[lastComboIndex] = append(game.IsYinA[lastComboIndex], isYinA)
+
+	// Resolve effects
+	var playerYin, playerYang *Player
+	if isYinA {
+		playerYin = game.PlayerA
+		playerYang = game.PlayerB
+	} else {
+		playerYin = game.PlayerB
+		playerYang = game.PlayerA
+	}
+	for n, effect := range []Effect{card.YinEffect, card.YangEffect} {
+		var affectedPlayer *Player
+		switch Balance(n + 1) {
+		case Yin:
+			affectedPlayer = playerYin
+		case Yang:
+			affectedPlayer = playerYang
+		}
+		switch effect {
+		case Draw:
+			affectedPlayer.Draw()
+		case Discard:
+			affectedPlayer.Discard(0) // should ask what to Discard
+			// TODO handle aspects
+		}
+	}
 
 	game.switchCurrentPlayer()
 
