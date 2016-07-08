@@ -3,7 +3,7 @@
 // data/combat_card.json
 // DO NOT EDIT!
 
-package main
+package asset
 
 import (
 	"bytes"

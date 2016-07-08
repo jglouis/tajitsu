@@ -12,4 +12,4 @@ to run the tests: `go test ./...`
 
 ## Update data files
 
-After any update of the data file, must run `go-bindata data/` within the source folder of the project. 
+After any update of the data file, must run `go-bindata -o asset/bindata.go -pkg asset data/` within the source folder of the project. 

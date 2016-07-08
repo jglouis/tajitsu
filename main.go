@@ -1,10 +1,12 @@
 package main
 
-import "github.com/jglouis/tajitsu/engine"
+import (
+	"github.com/jglouis/tajitsu/asset"
+	"github.com/jglouis/tajitsu/engine"
+)
 
 func main() {
-
-	data, err := Asset("data/combat_card.json")
+	data, err := asset.Asset("data/combat_card.json")
 	if err != nil {
 		panic(err)
 	}
